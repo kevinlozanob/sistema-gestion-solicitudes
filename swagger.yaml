@@ -1,0 +1,965 @@
+openapi: 3.0.0
+info:
+  title: Sistema de Gestión de Solicitudes
+  version: "1.0.0"
+  description: |
+    API REST robusta para la gestión de solicitudes de soporte técnico.  
+    Permite la administración de usuarios, roles, solicitudes, historial de cambios y reportes.  
+    Seguridad avanzada con JWT, CORS, rate limiting y validaciones.  
+    Documentación exhaustiva para todos los endpoints, parámetros, respuestas y errores posibles.
+
+servers:
+  - url: http://localhost:3000
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Usuario:
+      type: object
+      description: Usuario del sistema con credenciales y rol.
+      properties:
+        id:
+          type: integer
+          description: Identificador único del usuario.
+          example: 1
+        nombre:
+          type: string
+          description: Nombre completo del usuario.
+          example: "María Cliente"
+        email:
+          type: string
+          description: Correo electrónico único.
+          example: "cliente1@test.com"
+        rol:
+          type: string
+          description: Rol del usuario en el sistema.
+          enum: [CLIENTE, SOPORTE, ADMIN]
+          example: "CLIENTE"
+      required: [nombre, email, rol]
+    Solicitud:
+      type: object
+      description: Solicitud de soporte creada por un cliente.
+      properties:
+        id:
+          type: integer
+          description: Identificador único de la solicitud.
+          example: 2
+        titulo:
+          type: string
+          description: Título descriptivo del problema.
+          example: "Problema con el login"
+        descripcion:
+          type: string
+          description: Detalle completo del inconveniente.
+          example: "No puedo acceder a mi cuenta desde ayer"
+        estado:
+          type: string
+          description: Estado actual de la solicitud.
+          enum: [ABIERTA, EN_PROCESO, CERRADA]
+          example: "ABIERTA"
+        respuesta:
+          type: string
+          nullable: true
+          description: Respuesta del soporte o admin.
+          example: "Estamos revisando tu caso"
+        clienteId:
+          type: integer
+          description: ID del usuario cliente que creó la solicitud.
+          example: 1
+        soporteId:
+          type: integer
+          nullable: true
+          description: ID del usuario soporte asignado.
+          example: 2
+        createdAt:
+          type: string
+          format: date-time
+          description: Fecha de creación.
+          example: "2025-09-12T13:26:04.000Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Fecha de última actualización.
+          example: "2025-09-12T14:00:00.000Z"
+        cliente:
+          $ref: '#/components/schemas/Usuario'
+        soporte:
+          $ref: '#/components/schemas/Usuario'
+      required: [titulo, descripcion, clienteId, estado]
+    Historial:
+      type: object
+      description: Registro de cambios realizados sobre una solicitud.
+      properties:
+        id:
+          type: integer
+          description: Identificador único del historial.
+          example: 1
+        solicitudId:
+          type: integer
+          description: ID de la solicitud relacionada.
+          example: 2
+        usuarioId:
+          type: integer
+          description: ID del usuario que realizó el cambio.
+          example: 2
+        accion:
+          type: string
+          description: Acción realizada (creación, actualización, cierre, etc).
+          example: "Actualización de solicitud"
+        detalle:
+          type: string
+          description: Detalle del cambio realizado.
+          example: "Estado: EN_PROCESO, Respuesta: Ya estoy trabajando en esto"
+        createdAt:
+          type: string
+          format: date-time
+          description: Fecha del cambio.
+          example: "2025-09-12T14:05:00.000Z"
+        usuario:
+          $ref: '#/components/schemas/Usuario'
+      required: [solicitudId, usuarioId, accion, detalle]
+    Error:
+      type: object
+      description: Respuesta de error estándar.
+      properties:
+        error:
+          type: string
+          example: "Error en el servidor"
+        code:
+          type: integer
+          example: 500
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Auth
+    description: Endpoints de autenticación y prueba de roles.
+  - name: Usuarios
+    description: Registro y gestión de usuarios.
+  - name: Solicitudes
+    description: Creación, consulta, actualización y búsqueda de solicitudes de soporte.
+  - name: Reportes
+    description: Reportes y estadísticas del sistema.
+
+paths:
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login de usuario
+      description: |
+        Permite a un usuario autenticarse con email y contraseña.  
+        Retorna un token JWT y los datos del usuario.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: "cliente1@test.com"
+                password:
+                  type: string
+                  example: "cliente123"
+      responses:
+        '200':
+          description: Login exitoso. Retorna el token y datos del usuario.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Login exitoso"
+                  token:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  user:
+                    $ref: '#/components/schemas/Usuario'
+        '400':
+          description: Email o contraseña faltante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Credenciales inválidas.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error en el servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /usuarios:
+    post:
+      tags: [Usuarios]
+      summary: Registrar nuevo usuario
+      description: |
+        Permite registrar un usuario nuevo en el sistema.  
+        El rol puede ser CLIENTE, SOPORTE o ADMIN.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre:
+                  type: string
+                  example: "Pedro Cliente"
+                email:
+                  type: string
+                  example: "pedro@test.com"
+                password:
+                  type: string
+                  example: "pedro123"
+                rol:
+                  type: string
+                  enum: [CLIENTE, SOPORTE, ADMIN]
+                  example: "CLIENTE"
+      responses:
+        '201':
+          description: Usuario creado exitosamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Usuario creado"
+                  usuario:
+                    $ref: '#/components/schemas/Usuario'
+        '400':
+          description: Error de validación.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Email ya registrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error en el servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /usuarios/{id}:
+    get:
+      tags: [Usuarios]
+      summary: Obtener usuario por ID
+      description: |
+        Retorna los datos de un usuario específico por su ID.  
+        Solo accesible por admin o el propio usuario.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del usuario.
+      responses:
+        '200':
+          description: Usuario encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Usuario'
+        '403':
+          description: Sin permisos para ver el usuario.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Usuario no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error en el servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags: [Usuarios]
+      summary: Actualizar usuario por ID
+      description: |
+        Permite actualizar los datos de un usuario.  
+        Solo el propio usuario o admin pueden modificar.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del usuario.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre:
+                  type: string
+                  example: "Pedro Actualizado"
+                email:
+                  type: string
+                  example: "pedro2@test.com"
+                password:
+                  type: string
+                  example: "nuevo123"
+                rol:
+                  type: string
+                  enum: [CLIENTE, SOPORTE, ADMIN]
+                  example: "SOPORTE"
+      responses:
+        '200':
+          description: Usuario actualizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Usuario'
+        '400':
+          description: Error de validación.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Sin permisos para actualizar el usuario.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Usuario no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error en el servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags: [Usuarios]
+      summary: Eliminar usuario por ID
+      description: |
+        Permite eliminar un usuario del sistema.  
+        Solo admin puede eliminar usuarios.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del usuario.
+      responses:
+        '204':
+          description: Usuario eliminado exitosamente.
+        '403':
+          description: Sin permisos para eliminar el usuario.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Usuario no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error en el servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /solicitudes:
+    post:
+      tags: [Solicitudes]
+      summary: Crear nueva solicitud (solo CLIENTE)
+      description: |
+        Permite a un cliente crear una nueva solicitud de soporte.  
+        Requiere autenticación con JWT.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                titulo:
+                  type: string
+                  example: "No funciona el pago"
+                descripcion:
+                  type: string
+                  example: "Intenté pagar y sale error de sistema"
+      responses:
+        '201':
+          description: Solicitud creada exitosamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Solicitud creada"
+                  solicitud:
+                    $ref: '#/components/schemas/Solicitud'
+        '400':
+          description: Error de validación.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: No autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error en el servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    get:
+      tags: [Solicitudes]
+      summary: Listar solicitudes según rol
+      description: |
+        Lista las solicitudes según el rol del usuario autenticado:  
+        - ADMIN: todas las solicitudes  
+        - SOPORTE: solo las asignadas  
+        - CLIENTE: solo las propias
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: estado
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [ABIERTA, EN_PROCESO, CERRADA]
+          description: Filtrar por estado.
+        - name: clienteId
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Filtrar por ID de cliente.
+        - name: soporteId
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Filtrar por ID de soporte.
+        - name: fechaInicio
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Filtrar por fecha de inicio.
+        - name: fechaFin
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Filtrar por fecha de fin.
+      responses:
+        '200':
+          description: Lista de solicitudes.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  solicitudes:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Solicitud'
+        '401':
+          description: No autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error en el servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /solicitudes/buscar:
+    get:
+      tags: [Solicitudes]
+      summary: Buscar solicitudes por filtros avanzados
+      description: |
+        Permite buscar solicitudes usando múltiples filtros: estado, fecha, cliente, soporte, texto en título o descripción.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: estado
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [ABIERTA, EN_PROCESO, CERRADA]
+          description: Filtrar por estado.
+        - name: clienteId
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Filtrar por ID de cliente.
+        - name: soporteId
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Filtrar por ID de soporte.
+        - name: texto
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Buscar texto en título o descripción.
+        - name: fechaInicio
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Filtrar por fecha de inicio.
+        - name: fechaFin
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Filtrar por fecha de fin.
+      responses:
+        '200':
+          description: Resultados de la búsqueda.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  resultados:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Solicitud'
+        '401':
+          description: No autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error en el servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /solicitudes/{id}:
+    get:
+      tags: [Solicitudes]
+      summary: Obtener solicitud por ID
+      description: |
+        Obtiene los detalles de una solicitud específica.  
+        Solo el cliente dueño, el soporte asignado o el admin pueden verla.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID de la solicitud.
+      responses:
+        '200':
+          description: Solicitud encontrada.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  solicitud:
+                    $ref: '#/components/schemas/Solicitud'
+        '403':
+          description: Sin permisos para ver la solicitud.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Solicitud no encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error en el servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags: [Solicitudes]
+      summary: Actualizar estado y respuesta de solicitud (SOPORTE/ADMIN)
+      description: |
+        Permite a soporte o admin actualizar el estado y/o respuesta de una solicitud.  
+        Registra el cambio en el historial.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID de la solicitud.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                estado:
+                  type: string
+                  enum: [ABIERTA, EN_PROCESO, CERRADA]
+                  example: "EN_PROCESO"
+                respuesta:
+                  type: string
+                  example: "Ya estoy trabajando en esto"
+      responses:
+        '200':
+          description: Solicitud actualizada y registrada en historial.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Solicitud actualizada y registrada en historial"
+                  solicitud:
+                    $ref: '#/components/schemas/Solicitud'
+        '400':
+          description: Error de validación.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Sin permisos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Solicitud no encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error en el servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags: [Solicitudes]
+      summary: Eliminar solicitud por ID (solo ADMIN)
+      description: |
+        Permite eliminar una solicitud del sistema.  
+        Solo admin puede eliminar solicitudes.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID de la solicitud.
+      responses:
+        '204':
+          description: Solicitud eliminada exitosamente.
+        '403':
+          description: Sin permisos para eliminar la solicitud.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Solicitud no encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error en el servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /solicitudes/{id}/asignar:
+    put:
+      tags: [Solicitudes]
+      summary: Asignar soporte a una solicitud (solo ADMIN)
+      description: |
+        Permite asignar un usuario de soporte a una solicitud específica.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID de la solicitud.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                soporteId:
+                  type: integer
+                  example: 2
+      responses:
+        '200':
+          description: Soporte asignado exitosamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Soporte asignado"
+                  solicitud:
+                    $ref: '#/components/schemas/Solicitud'
+        '400':
+          description: Error de validación.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Sin permisos para asignar soporte.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Solicitud o soporte no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error en el servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /solicitudes/{id}/historial:
+    get:
+      tags: [Solicitudes]
+      summary: Ver historial de cambios de una solicitud (SOPORTE/ADMIN)
+      description: |
+        Permite ver el historial de cambios realizados sobre una solicitud.  
+        Solo soporte y admin pueden acceder.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID de la solicitud.
+      responses:
+        '200':
+          description: Historial de la solicitud.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  historial:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Historial'
+        '403':
+          description: Sin permisos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Solicitud no encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error en el servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /reportes/solicitudes:
+    get:
+      tags: [Reportes]
+      summary: Reporte de solicitudes agrupadas por estado (solo ADMIN)
+      description: |
+        Retorna un resumen de la cantidad de solicitudes por estado (ABIERTA, EN_PROCESO, CERRADA).  
+        Solo accesible por administradores.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Resumen por estado.
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  ABIERTA: 2
+                  EN_PROCESO: 1
+                  CERRADA: 3
+                additionalProperties:
+                  type: integer
+        '401':
+          description: No autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error generando el reporte.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /reportes/estadisticas-mensuales:
+    get:
+      tags: [Reportes]
+      summary: Estadísticas mensuales de solicitudes
+      description: |
+        Retorna estadísticas mensuales de solicitudes creadas, cerradas y en proceso.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: año
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Año para filtrar estadísticas.
+      responses:
+        '200':
+          description: Estadísticas mensuales.
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  enero:
+                    creadas: 10
+                    cerradas: 5
+                    en_proceso: 3
+                  febrero:
+                    creadas: 8
+                    cerradas: 6
+                    en_proceso: 2
+        '401':
+          description: No autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error generando el reporte.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /prueba-auth:
+    get:
+      tags: [Auth]
+      summary: Endpoint de prueba de autenticación y roles
+      description: |
+        Retorna un mensaje de bienvenida con el email y rol del usuario autenticado.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Mensaje de bienvenida con rol.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensaje:
+                    type: string
+                    example: "Bienvenido cliente1@test.com, tu rol es CLIENTE"
+        '401':
+          description: No autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+

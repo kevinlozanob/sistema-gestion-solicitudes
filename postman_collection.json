@@ -1,0 +1,116 @@
+{
+  "info": {
+    "_postman_id": "sistema-gestion-solicitudes",
+    "name": "Sistema de Gestión de Solicitudes",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Login Admin",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@test.com\",\n  \"password\": \"123456\"\n}"
+        },
+        "url": { "raw": "http://localhost:3000/auth/login", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["auth", "login"] }
+      },
+      "response": []
+    },
+    {
+      "name": "Login Soporte",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"soporte1@test.com\",\n  \"password\": \"123456\"\n}"
+        },
+        "url": { "raw": "http://localhost:3000/auth/login", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["auth", "login"] }
+      },
+      "response": []
+    },
+    {
+      "name": "Login Cliente",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"cliente1@test.com\",\n  \"password\": \"123456\"\n}"
+        },
+        "url": { "raw": "http://localhost:3000/auth/login", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["auth", "login"] }
+      },
+      "response": []
+    },
+    {
+      "name": "Crear Solicitud (Cliente)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{CLIENTE_TOKEN}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"titulo\": \"Problema de prueba\",\n  \"descripcion\": \"No puedo acceder a la sección de pagos\"\n}"
+        },
+        "url": { "raw": "http://localhost:3000/solicitudes", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["solicitudes"] }
+      },
+      "response": []
+    },
+    {
+      "name": "Listar Solicitudes (Admin)",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{ADMIN_TOKEN}}" }],
+        "url": { "raw": "http://localhost:3000/solicitudes", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["solicitudes"] }
+      },
+      "response": []
+    },
+    {
+      "name": "Actualizar Solicitud (Soporte/Admin)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{SOPORTE_TOKEN}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"estado\": \"EN_PROCESO\",\n  \"respuesta\": \"Ya estoy trabajando en esto\"\n}"
+        },
+        "url": { "raw": "http://localhost:3000/solicitudes/1", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["solicitudes", "1"] }
+      },
+      "response": []
+    },
+    {
+      "name": "Ver Historial de Solicitud (Soporte/Admin)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{SOPORTE_TOKEN}}" }
+        ],
+        "url": { "raw": "http://localhost:3000/solicitudes/1/historial", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["solicitudes", "1", "historial"] }
+      },
+      "response": []
+    },
+    {
+      "name": "Reporte de Solicitudes (Admin)",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{ADMIN_TOKEN}}" }],
+        "url": { "raw": "http://localhost:3000/reportes/solicitudes", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["reportes", "solicitudes"] }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    { "key": "ADMIN_TOKEN", "value": "" },
+    { "key": "SOPORTE_TOKEN", "value": "" },
+    { "key": "CLIENTE_TOKEN", "value": "" }
+  ]
+}

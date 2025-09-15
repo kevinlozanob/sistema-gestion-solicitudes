@@ -1,0 +1,53 @@
+{
+  "name": "sistema-gestion-solicitudes",
+  "version": "1.0.0",
+  "description": "Sistema completo de gestión de solicitudes con IA integrada - Prueba técnica",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npx prisma generate",
+    "deploy": "npx prisma migrate deploy && npx prisma generate",
+    "seed": "node database/seed.js"
+  },
+  "keywords": ["nodejs", "react", "ai", "solicitudes", "soporte", "jwt", "express", "prisma", "full-stack"],
+  "author": "Kevin Nicolas Lozano Bello <kebello776@gmail.com>",
+  "license": "MIT",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kevinlozanob/sistema-gestion-solicitudes.git"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.16.1",
+    "bcryptjs": "^3.0.2",
+    "chart.js": "^4.5.0",
+    "chartjs-to-image": "^1.2.2",
+    "cors": "^2.8.5",
+    "date-fns": "^4.1.0",
+    "dotenv": "^17.2.2",
+    "exceljs": "^4.4.0",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.1.0",
+    "groq-sdk": "^0.32.0",
+    "helmet": "^8.1.0",
+    "joi": "^18.0.1",
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^7.0.6",
+    "pdfkit": "^0.17.2",
+    "prisma": "^6.16.1",
+    "recharts": "^3.2.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "yamljs": "^0.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.1",
+    "nodemon": "^3.1.10"
+  }
+}

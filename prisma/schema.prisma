@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  password String
+  nombre   String
+  rol      String @default("CLIENTE")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  
+
+  // Relaciones
+  solicitudes          Solicitud[]
+  solicitudesAsignadas Solicitud[] @relation("SolicitudSoporte")
+  historial            Historial[]
+
+  @@map("usuarios")
+}
+
+model Solicitud {
+  id          Int      @id @default(autoincrement())
+  titulo      String
+  descripcion String
+  estado      String   @default("ABIERTA")
+  respuesta   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Foreign keys
+  clienteId Int
+  soporteId Int?
+
+  // Relaciones
+  cliente   User      @relation(fields: [clienteId], references: [id])
+  soporte   User?     @relation("SolicitudSoporte", fields: [soporteId], references: [id])
+  historial Historial[]
+
+  @@map("solicitudes")
+}
+
+model Historial {
+  id          Int      @id @default(autoincrement())
+  solicitudId Int
+  usuarioId   Int
+  accion      String
+  detalle     String
+  createdAt   DateTime @default(now())
+
+  solicitud Solicitud @relation(fields: [solicitudId], references: [id])
+  usuario   User      @relation(fields: [usuarioId], references: [id])
+
+  @@map("historial")
+}
