@@ -27,8 +27,10 @@ app.use(cors({
     const allowedOrigins = [
       'http://localhost:5173',
       'http://localhost:3000',
+      'https://backend-api-production-6640.up.railway.app',
       'https://sistema-gestion-solicitudes-production-1bf0.up.railway.app',
-      'https://${API_URL}'
+      'https://sistema-gestion-solicitudes-production-d73d.up.railway.app',
+      `https://${API_URL}`
     ];
     
     // Permitir requests sin origin (mobile apps, Postman, etc.)
