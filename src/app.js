@@ -26,7 +26,7 @@ app.use(cors({
   origin: [
     'http://localhost:5173', 
     'https://sistema-gestion-solicitudes-production.up.railway.app', 
-    'https://sistema-gestion-solicitudes-production-1bf0.up.railway.app', 
+    'https://sistema-gestion-solicitudes-production-1bf0.up.railway.app',
     'http://127.0.0.1:5173',
     'http://localhost:5174'
   ],
