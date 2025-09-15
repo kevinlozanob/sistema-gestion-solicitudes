@@ -32,7 +32,7 @@ export default function GestionUsuarios({ user }) {
       });
 
       const res = await fetch(`${API_URL}/usuarios?${params}`, {
-        method: "DELETE",
+        method: "GET",
         headers: { Authorization: `Bearer ${token}` }
       });
 
