@@ -285,6 +285,7 @@ app.use((error, req, res, next) => {
   });
 });
 
+
 const server = app.listen(PORT, async () => {
   console.log('\n🚀 ===============================================');
   console.log(`   SISTEMA DE SOLICITUDES CON IA INICIADO`);
