@@ -30,7 +30,6 @@ app.use(cors({
       'https://backend-api-production-6640.up.railway.app',
       'https://sistema-gestion-solicitudes-production-1bf0.up.railway.app',
       'https://sistema-gestion-solicitudes-production-d73d.up.railway.app',
-      `https://${API_URL}`
     ];
     
     // Permitir requests sin origin (mobile apps, Postman, etc.)
