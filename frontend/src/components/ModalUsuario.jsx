@@ -45,8 +45,8 @@ export default function ModalUsuario({
       }
 
       const url = isEditing 
-        ? `http://localhost:3000/usuarios/${usuario.id}`
-        : "http://localhost:3000/usuarios";
+        ? `https://sistema-gestion-solicitudes-production.up.railway.app/usuarios/${usuario.id}`
+        : "https://sistema-gestion-solicitudes-production.up.railway.app/usuarios";
       
       const method = isEditing ? "PUT" : "POST";
 

@@ -16,7 +16,7 @@ export default function Login({ onLogin }) {
     console.log("🔄 Intentando login con:", { email, password }); // Debug
     
     try {
-      const res = await fetch("http://localhost:3000/auth/login", {
+      const res = await fetch("https://sistema-gestion-solicitudes-production.up.railway.app/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),

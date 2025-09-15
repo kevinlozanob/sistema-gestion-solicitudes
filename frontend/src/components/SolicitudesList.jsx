@@ -12,7 +12,7 @@ export default function SolicitudesList({ user }) {
       setError("");
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch("http://localhost:3000/solicitudes", {
+        const res = await fetch("https://sistema-gestion-solicitudes-production.up.railway.app/solicitudes", {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();

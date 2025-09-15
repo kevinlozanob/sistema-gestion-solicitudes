@@ -25,7 +25,7 @@ export default function ReportesAvanzados({ user }) {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3000/reportes/dashboard', {
+      const res = await fetch('https://sistema-gestion-solicitudes-production.up.railway.app/reportes/dashboard', {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -52,7 +52,7 @@ export default function ReportesAvanzados({ user }) {
     try {
       const token = localStorage.getItem('token');
       const params = new URLSearchParams(filtros);
-      const res = await fetch(`http://localhost:3000/reportes/fechas?${params}`, {
+      const res = await fetch(`https://sistema-gestion-solicitudes-production.up.railway.app/reportes/fechas?${params}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -71,7 +71,7 @@ export default function ReportesAvanzados({ user }) {
     try {
       const token = localStorage.getItem('token');
       const params = new URLSearchParams(filtros);
-      const res = await fetch(`http://localhost:3000/reportes/exportar/excel?${params}`, {
+      const res = await fetch(`https://sistema-gestion-solicitudes-production.up.railway.app/reportes/exportar/excel?${params}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -93,7 +93,7 @@ export default function ReportesAvanzados({ user }) {
     try {
       const token = localStorage.getItem('token');
       const params = new URLSearchParams(filtros);
-      const res = await fetch(`http://localhost:3000/reportes/exportar/pdf?${params}`, {
+      const res = await fetch(`https://sistema-gestion-solicitudes-production.up.railway.app/reportes/exportar/pdf?${params}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

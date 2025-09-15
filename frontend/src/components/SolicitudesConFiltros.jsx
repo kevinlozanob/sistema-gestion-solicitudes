@@ -29,7 +29,7 @@ export default function SolicitudesConFiltros({ user }) {
         }
       }
 
-      const res = await fetch(`http://localhost:3000/solicitudes/buscar?${params}`, {
+      const res = await fetch(`https://sistema-gestion-solicitudes-production.up.railway.app/solicitudes/buscar?${params}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

@@ -30,7 +30,7 @@ export default function GestionUsuarios({ user }) {
         ...(filtros.rol && { rol: filtros.rol })
       });
 
-      const res = await fetch(`http://localhost:3000/usuarios?${params}`, {
+      const res = await fetch(`https://sistema-gestion-solicitudes-production.up.railway.app/usuarios?${params}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -56,7 +56,7 @@ export default function GestionUsuarios({ user }) {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:3000/usuarios/${usuarioId}`, {
+      const res = await fetch(`https://sistema-gestion-solicitudes-production.up.railway.app/usuarios/${usuarioId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });
