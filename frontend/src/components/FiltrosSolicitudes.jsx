@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { Search, Filter, Calendar, User, RotateCcw, ChevronDown } from "lucide-react";
+import API_URL from '../config.js';
+
 
 export default function FiltrosSolicitudes({ user, onFiltrosChange }) {
   const [filtros, setFiltros] = useState({
@@ -25,9 +27,10 @@ export default function FiltrosSolicitudes({ user, onFiltrosChange }) {
   const fetchOpciones = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("https://${API_URL}/solicitudes/filtros/opciones", {
+      const res = await fetch(`${API_URL}/solicitudes/filtros/opciones`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+
       if (res.ok) {
         const data = await res.json();
         setOpciones(data);
@@ -103,7 +106,7 @@ export default function FiltrosSolicitudes({ user, onFiltrosChange }) {
           }}
           onClick={() => setShowAdvanced(!showAdvanced)}
         >
-          <ChevronDown size={16} style={{ 
+          <ChevronDown size={16} style={{
             transform: showAdvanced ? "rotate(180deg)" : "rotate(0deg)",
             transition: "transform 0.3s ease"
           }} />

@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Send, FileText, MessageSquare } from "lucide-react";
+import API_URL from '../config.js';
+
 
 export default function CrearSolicitud({ onSuccess }) {
   const [titulo, setTitulo] = useState("");
@@ -16,7 +18,7 @@ export default function CrearSolicitud({ onSuccess }) {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("https://${API_URL}/solicitudes", {
+      const res = await fetch(`${API_URL}/solicitudes`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -25,17 +27,18 @@ export default function CrearSolicitud({ onSuccess }) {
         body: JSON.stringify({ titulo, descripcion }),
       });
 
+
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Error al crear solicitud");
 
       setSuccess(true);
       setTitulo("");
       setDescripcion("");
-      
+
       setTimeout(() => {
         onSuccess();
       }, 2000);
-      
+
     } catch (err) {
       setError(err.message);
     } finally {
@@ -167,7 +170,7 @@ export default function CrearSolicitud({ onSuccess }) {
             style={{
               width: "100%",
               padding: "15px",
-              background: loading 
+              background: loading
                 ? "linear-gradient(135deg, #ccc 0%, #999 100%)"
                 : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
               color: "white",

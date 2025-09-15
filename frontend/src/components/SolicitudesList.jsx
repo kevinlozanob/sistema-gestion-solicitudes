@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { Clock, User, AlertCircle, CheckCircle, Play } from "lucide-react";
+import API_URL from '../config.js';
+
 
 export default function SolicitudesList({ user }) {
   const [solicitudes, setSolicitudes] = useState([]);
@@ -12,7 +14,7 @@ export default function SolicitudesList({ user }) {
       setError("");
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch("https://${API_URL}/solicitudes", {
+        const res = await fetch(`${API_URL}/solicitudes`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -52,10 +54,10 @@ export default function SolicitudesList({ user }) {
   );
 
   if (error) return (
-    <div style={{ 
-      background: "#ff6b6b", 
-      color: "white", 
-      padding: "15px", 
+    <div style={{
+      background: "#ff6b6b",
+      color: "white",
+      padding: "15px",
       borderRadius: "8px",
       textAlign: "center"
     }}>
@@ -64,8 +66,8 @@ export default function SolicitudesList({ user }) {
   );
 
   if (!solicitudes.length) return (
-    <div style={{ 
-      textAlign: "center", 
+    <div style={{
+      textAlign: "center",
       padding: "50px",
       background: "white",
       borderRadius: "12px",
