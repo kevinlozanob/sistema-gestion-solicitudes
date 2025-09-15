@@ -31,7 +31,7 @@ export default function GestionUsuarios({ user }) {
         ...(filtros.rol && { rol: filtros.rol })
       });
 
-      const res = await fetch(`${API_URL}/usuarios/${usuarioId}`, {
+      const res = await fetch(`${API_URL}/usuarios?${params}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });
