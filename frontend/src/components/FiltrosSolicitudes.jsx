@@ -25,7 +25,7 @@ export default function FiltrosSolicitudes({ user, onFiltrosChange }) {
   const fetchOpciones = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("https://sistema-gestion-solicitudes-production.up.railway.app/solicitudes/filtros/opciones", {
+      const res = await fetch("https://${API_URL}/solicitudes/filtros/opciones", {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {

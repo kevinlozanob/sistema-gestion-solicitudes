@@ -23,16 +23,26 @@ const PORT = process.env.PORT || 3000;
 app.set('trust proxy', true);
 
 app.use(cors({
-  origin: [
-    'http://localhost:5173', 
-    'https://sistema-gestion-solicitudes-production.up.railway.app', 
-    'https://sistema-gestion-solicitudes-production-1bf0.up.railway.app',
-    'http://127.0.0.1:5173',
-    'http://localhost:5174'
-  ],
+  origin: function(origin, callback) {
+    const allowedOrigins = [
+      'http://localhost:5173',
+      'http://localhost:3000',
+      'https://sistema-gestion-solicitudes-production-1bf0.up.railway.app',
+      'https://${API_URL}'
+    ];
+    
+    // Permitir requests sin origin (mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('No permitido por CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(helmet({
@@ -49,6 +59,7 @@ app.use(rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Demasiadas solicitudes, intenta de nuevo más tarde' },
+  trustProxy: false,
   skip: (req) => {
     // No aplicar rate limit a endpoints de salud
     return req.path === '/health' || req.path === '/';
@@ -67,6 +78,10 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
   customSiteTitle: "API Sistema de Solicitudes",
   customfavIcon: "/favicon.ico"
 }));
+
+app.get('/favicon.ico', (req, res) => {
+  res.status(204).end();
+});
 
 app.get('/', (req, res) => {
   res.json({ 

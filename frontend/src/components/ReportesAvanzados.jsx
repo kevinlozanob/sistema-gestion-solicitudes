@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 import { Download, Calendar, TrendingUp, Users, Clock, FileText, Filter, RefreshCw } from 'lucide-react';
+import API_URL from '../config.js';
+
 
 export default function ReportesAvanzados({ user }) {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [filtros, setFiltros] = useState({
-    
+
     fechaInicio: '',
     fechaFin: '',
     granularidad: 'dia'
@@ -25,7 +27,7 @@ export default function ReportesAvanzados({ user }) {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('https://sistema-gestion-solicitudes-production.up.railway.app/reportes/dashboard', {
+      const res = await fetch(`${API_URL}/reportes/dashboard`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -52,7 +54,7 @@ export default function ReportesAvanzados({ user }) {
     try {
       const token = localStorage.getItem('token');
       const params = new URLSearchParams(filtros);
-      const res = await fetch(`https://sistema-gestion-solicitudes-production.up.railway.app/reportes/fechas?${params}`, {
+      const res = await fetch(`${API_URL}/reportes/fechas?${params}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -71,7 +73,7 @@ export default function ReportesAvanzados({ user }) {
     try {
       const token = localStorage.getItem('token');
       const params = new URLSearchParams(filtros);
-      const res = await fetch(`https://sistema-gestion-solicitudes-production.up.railway.app/reportes/exportar/excel?${params}`, {
+      const res = await fetch(`${API_URL}/reportes/exportar/excel?${params}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -93,7 +95,7 @@ export default function ReportesAvanzados({ user }) {
     try {
       const token = localStorage.getItem('token');
       const params = new URLSearchParams(filtros);
-      const res = await fetch(`https://sistema-gestion-solicitudes-production.up.railway.app/reportes/exportar/pdf?${params}`, {
+      const res = await fetch(`${API_URL}/reportes/exportar/pdf?${params}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -114,10 +116,10 @@ export default function ReportesAvanzados({ user }) {
   // Preparar datos para gráficos
   const prepararDatosEstados = () => {
     if (!dashboardData?.solicitudes_por_estado) return [];
-    
+
     const colores = {
       ABIERTA: '#e74c3c',
-      EN_PROCESO: '#f39c12', 
+      EN_PROCESO: '#f39c12',
       CERRADA: '#27ae60'
     };
 
@@ -431,7 +433,7 @@ export default function ReportesAvanzados({ user }) {
           <Filter size={20} />
           Reporte por Fechas
         </h3>
-        
+
         <div style={{
           display: 'grid',
           gridTemplateColumns: '1fr 1fr 1fr auto',
@@ -445,7 +447,7 @@ export default function ReportesAvanzados({ user }) {
             <input
               type="date"
               value={filtros.fechaInicio}
-              onChange={(e) => setFiltros({...filtros, fechaInicio: e.target.value})}
+              onChange={(e) => setFiltros({ ...filtros, fechaInicio: e.target.value })}
               style={{
                 width: '100%',
                 padding: '12px',
@@ -463,7 +465,7 @@ export default function ReportesAvanzados({ user }) {
             <input
               type="date"
               value={filtros.fechaFin}
-              onChange={(e) => setFiltros({...filtros, fechaFin: e.target.value})}
+              onChange={(e) => setFiltros({ ...filtros, fechaFin: e.target.value })}
               style={{
                 width: '100%',
                 padding: '12px',
@@ -480,7 +482,7 @@ export default function ReportesAvanzados({ user }) {
             </label>
             <select
               value={filtros.granularidad}
-              onChange={(e) => setFiltros({...filtros, granularidad: e.target.value})}
+              onChange={(e) => setFiltros({ ...filtros, granularidad: e.target.value })}
               style={{
                 width: '100%',
                 padding: '12px',
@@ -528,7 +530,7 @@ export default function ReportesAvanzados({ user }) {
           <h3 style={{ margin: '0 0 20px 0', color: '#333' }}>
             Reporte del {reportePorFechas.rango.inicio} al {reportePorFechas.rango.fin}
           </h3>
-          
+
           <p style={{ color: '#666', marginBottom: '20px' }}>
             Total de solicitudes en el período: <strong>{reportePorFechas.total_solicitudes}</strong>
           </p>
@@ -548,22 +550,22 @@ export default function ReportesAvanzados({ user }) {
                 {Object.entries(reportePorFechas.datos_agrupados)
                   .sort(([a], [b]) => a.localeCompare(b))
                   .map(([fecha, datos]) => (
-                  <tr key={fecha}>
-                    <td style={{ padding: '12px', border: '1px solid #dee2e6' }}>{fecha}</td>
-                    <td style={{ padding: '12px', textAlign: 'center', border: '1px solid #dee2e6', fontWeight: '600' }}>
-                      {datos.total}
-                    </td>
-                    <td style={{ padding: '12px', textAlign: 'center', border: '1px solid #dee2e6', color: '#e74c3c' }}>
-                      {datos.abierta}
-                    </td>
-                    <td style={{ padding: '12px', textAlign: 'center', border: '1px solid #dee2e6', color: '#f39c12' }}>
-                      {datos.en_proceso}
-                    </td>
-                    <td style={{ padding: '12px', textAlign: 'center', border: '1px solid #dee2e6', color: '#27ae60' }}>
-                      {datos.cerrada}
-                    </td>
-                  </tr>
-                ))}
+                    <tr key={fecha}>
+                      <td style={{ padding: '12px', border: '1px solid #dee2e6' }}>{fecha}</td>
+                      <td style={{ padding: '12px', textAlign: 'center', border: '1px solid #dee2e6', fontWeight: '600' }}>
+                        {datos.total}
+                      </td>
+                      <td style={{ padding: '12px', textAlign: 'center', border: '1px solid #dee2e6', color: '#e74c3c' }}>
+                        {datos.abierta}
+                      </td>
+                      <td style={{ padding: '12px', textAlign: 'center', border: '1px solid #dee2e6', color: '#f39c12' }}>
+                        {datos.en_proceso}
+                      </td>
+                      <td style={{ padding: '12px', textAlign: 'center', border: '1px solid #dee2e6', color: '#27ae60' }}>
+                        {datos.cerrada}
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>

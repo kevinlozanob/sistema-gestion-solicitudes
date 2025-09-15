@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Users, Plus, Edit2, Trash2, Search, Filter, UserPlus, Shield, User as UserIcon } from "lucide-react";
 import ModalUsuario from "./ModalUsuario.jsx";
+import API_URL from '../config.js';
 
 export default function GestionUsuarios({ user }) {
   const [usuarios, setUsuarios] = useState([]);
@@ -30,7 +31,8 @@ export default function GestionUsuarios({ user }) {
         ...(filtros.rol && { rol: filtros.rol })
       });
 
-      const res = await fetch(`https://sistema-gestion-solicitudes-production.up.railway.app/usuarios?${params}`, {
+      const res = await fetch(`${API_URL}/usuarios/${usuarioId}`, {
+        method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -56,7 +58,7 @@ export default function GestionUsuarios({ user }) {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`https://sistema-gestion-solicitudes-production.up.railway.app/usuarios/${usuarioId}`, {
+      const res = await fetch(`${API_URL}/usuarios/${usuarioId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -178,11 +180,11 @@ export default function GestionUsuarios({ user }) {
             alignItems: "end"
           }}>
             <div>
-              <label style={{ 
-                display: "block", 
-                marginBottom: "5px", 
-                fontWeight: "500", 
-                color: "#555" 
+              <label style={{
+                display: "block",
+                marginBottom: "5px",
+                fontWeight: "500",
+                color: "#555"
               }}>
                 <Search size={16} style={{ marginRight: "5px", verticalAlign: "middle" }} />
                 Buscar usuario
@@ -191,7 +193,7 @@ export default function GestionUsuarios({ user }) {
                 type="text"
                 placeholder="Nombre o email..."
                 value={filtros.search}
-                onChange={(e) => setFiltros({...filtros, search: e.target.value, page: 1})}
+                onChange={(e) => setFiltros({ ...filtros, search: e.target.value, page: 1 })}
                 style={{
                   width: "100%",
                   padding: "10px",
@@ -204,19 +206,19 @@ export default function GestionUsuarios({ user }) {
                 onBlur={(e) => e.target.style.borderColor = "#ddd"}
               />
             </div>
-            
+
             <div>
-              <label style={{ 
-                display: "block", 
-                marginBottom: "5px", 
-                fontWeight: "500", 
-                color: "#555" 
+              <label style={{
+                display: "block",
+                marginBottom: "5px",
+                fontWeight: "500",
+                color: "#555"
               }}>
                 Rol
               </label>
               <select
                 value={filtros.rol}
-                onChange={(e) => setFiltros({...filtros, rol: e.target.value, page: 1})}
+                onChange={(e) => setFiltros({ ...filtros, rol: e.target.value, page: 1 })}
                 style={{
                   width: "100%",
                   padding: "10px",
@@ -400,7 +402,7 @@ export default function GestionUsuarios({ user }) {
                           {usuario.rol}
                         </div>
                       </div>
-                      
+
                       <div style={{
                         display: "grid",
                         gridTemplateColumns: "1fr 1fr",
@@ -449,7 +451,7 @@ export default function GestionUsuarios({ user }) {
                         <Edit2 size={14} />
                         {usuario.id === user.id ? "Mi Perfil" : "Editar"}
                       </button>
-                      
+
                       <button
                         onClick={() => handleEliminar(usuario.id)}
                         disabled={usuario.id === user.id}
@@ -499,7 +501,7 @@ export default function GestionUsuarios({ user }) {
                 padding: "20px"
               }}>
                 <button
-                  onClick={() => setFiltros({...filtros, page: filtros.page - 1})}
+                  onClick={() => setFiltros({ ...filtros, page: filtros.page - 1 })}
                   disabled={!meta.hasPrev}
                   style={{
                     padding: "8px 12px",
@@ -513,9 +515,9 @@ export default function GestionUsuarios({ user }) {
                 >
                   ← Anterior
                 </button>
-                
-                <span style={{ 
-                  color: "#666", 
+
+                <span style={{
+                  color: "#666",
                   fontSize: "14px",
                   background: "#f8f9fa",
                   padding: "8px 15px",
@@ -523,9 +525,9 @@ export default function GestionUsuarios({ user }) {
                 }}>
                   Página {filtros.page} de {meta.totalPages} • {meta.total} usuarios
                 </span>
-                
+
                 <button
-                  onClick={() => setFiltros({...filtros, page: filtros.page + 1})}
+                  onClick={() => setFiltros({ ...filtros, page: filtros.page + 1 })}
                   disabled={!meta.hasNext}
                   style={{
                     padding: "8px 12px",
@@ -557,8 +559,8 @@ export default function GestionUsuarios({ user }) {
           <Users size={64} color="#ccc" style={{ marginBottom: "20px" }} />
           <h3 style={{ color: "#666", margin: "0 0 10px 0" }}>No hay usuarios</h3>
           <p style={{ color: "#999", margin: "0 0 20px 0" }}>
-            {filtros.search || filtros.rol 
-              ? "No se encontraron usuarios con los filtros aplicados" 
+            {filtros.search || filtros.rol
+              ? "No se encontraron usuarios con los filtros aplicados"
               : "Aún no hay usuarios registrados en el sistema"
             }
           </p>

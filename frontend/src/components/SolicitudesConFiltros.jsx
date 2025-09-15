@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Clock, User, AlertCircle, CheckCircle, Play, ChevronLeft, ChevronRight } from "lucide-react";
 import FiltrosSolicitudes from "./FiltrosSolicitudes.jsx";
+import API_URL from '../config.js';
 
 export default function SolicitudesConFiltros({ user }) {
   const [solicitudes, setSolicitudes] = useState([]);
@@ -29,7 +30,7 @@ export default function SolicitudesConFiltros({ user }) {
         }
       }
 
-      const res = await fetch(`https://sistema-gestion-solicitudes-production.up.railway.app/solicitudes/buscar?${params}`, {
+      const res = await fetch(`${API_URL}/solicitudes/buscar?${params}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Eye, EyeOff, Mail, Lock, User, AlertCircle } from "lucide-react";
+import API_URL from '../src/config.js';
 
 export default function Login({ onLogin }) {
   const [email, setEmail] = useState("");
@@ -16,7 +17,7 @@ export default function Login({ onLogin }) {
     console.log("🔄 Intentando login con:", { email, password }); // Debug
     
     try {
-      const res = await fetch("https://sistema-gestion-solicitudes-production.up.railway.app/auth/login", {
+      const res = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),

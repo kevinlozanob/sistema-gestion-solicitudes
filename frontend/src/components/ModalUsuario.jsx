@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { X, User, Mail, Lock, Shield, Save } from "lucide-react";
+import API_URL from '../config.js';
 
-export default function ModalUsuario({ 
-  isOpen, 
-  onClose, 
-  usuario = null, 
-  onSuccess, 
-  currentUser 
+export default function ModalUsuario({
+  isOpen,
+  onClose,
+  usuario = null,
+  onSuccess,
+  currentUser
 }) {
   const [formData, setFormData] = useState({
     nombre: usuario?.nombre || "",
@@ -27,10 +28,10 @@ export default function ModalUsuario({
 
     try {
       const token = localStorage.getItem("token");
-      
+
       // Preparar datos (solo incluir campos que han cambiado)
       const dataToSend = {};
-      
+
       if (formData.nombre !== (usuario?.nombre || "")) {
         dataToSend.nombre = formData.nombre;
       }
@@ -44,10 +45,10 @@ export default function ModalUsuario({
         dataToSend.rol = formData.rol;
       }
 
-      const url = isEditing 
-        ? `https://sistema-gestion-solicitudes-production.up.railway.app/usuarios/${usuario.id}`
-        : "https://sistema-gestion-solicitudes-production.up.railway.app/usuarios";
-      
+      const url = isEditing
+        ? `${API_URL}/usuarios/${usuario.id}`
+        : `${API_URL}/usuarios`;
+
       const method = isEditing ? "PUT" : "POST";
 
       // Para crear usuario, enviar todos los datos
@@ -67,7 +68,7 @@ export default function ModalUsuario({
 
       onSuccess();
       onClose();
-      
+
       // Reset form
       setFormData({
         nombre: "",
@@ -322,7 +323,7 @@ export default function ModalUsuario({
                   padding: "12px 20px",
                   border: "none",
                   borderRadius: "8px",
-                  background: loading 
+                  background: loading
                     ? "linear-gradient(135deg, #ccc 0%, #999 100%)"
                     : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                   color: "white",

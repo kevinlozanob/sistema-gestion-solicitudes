@@ -16,7 +16,7 @@ export default function CrearSolicitud({ onSuccess }) {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("https://sistema-gestion-solicitudes-production.up.railway.app/solicitudes", {
+      const res = await fetch("https://${API_URL}/solicitudes", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
