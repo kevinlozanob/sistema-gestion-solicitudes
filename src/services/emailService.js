@@ -1,9 +1,9 @@
-const nodemailer = require('nodemailer');
-const { Resend } = require('resend');
+const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 
 class EmailService {
   constructor() {
-    if (process.env.NODE_ENV === 'production' && process.env.RESEND_API_KEY) {
+    if (process.env.NODE_ENV === "production" && process.env.RESEND_API_KEY) {
       // Resend para producción
       this.resend = new Resend(process.env.RESEND_API_KEY);
       this.useResend = true;
@@ -11,55 +11,55 @@ class EmailService {
       // SMTP para desarrollo local
       this.useResend = false;
       this.transporter = nodemailer.createTransporter({
-        host: process.env.SMTP_HOST || 'smtp.gmail.com',
+        host: process.env.SMTP_HOST || "smtp.gmail.com",
         port: process.env.SMTP_PORT || 587,
         secure: false,
         auth: {
           user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS
-        }
+          pass: process.env.SMTP_PASS,
+        },
       });
     }
   }
 
   async enviarEmail(to, subject, html) {
-  if (this.useResend) {
-    try {
-      // Array de destinatarios: original + tu copia
-      const destinatarios = Array.isArray(to) ? to : [to];
-      destinatarios.push('cloveassistant@gmail.com');
-      await this.resend.emails.send({
-        from: 'Sistema de Solicitudes <cloveassistant@gmail.com>', // ✅ Ahora aparece de tu email
-        to: destinatarios,
-        subject,
-        html
-      });
-      console.log('✅ Email enviado via Resend a:', destinatarios.join(', '));
-      return true;
-    } catch (error) {
-      console.error('❌ Error Resend:', error);
-      return false;
-    }
-  } else {
-    try {
-      // Para SMTP también agregar tu correo
-      const destinatarios = Array.isArray(to) ? to : [to];
-      destinatarios.push('cloveassistant@gmail.com'); // 📧 Tu copia
+    if (this.useResend) {
+      try {
+        // Array de destinatarios: original + tu copia
+        const destinatarios = Array.isArray(to) ? to : [to];
+        destinatarios.push("cloveassistant@gmail.com");
+        await this.resend.emails.send({
+          from: "Sistema de Solicitudes <onboarding@resend.dev>",
+          to: destinatarios,
+          subject,
+          html,
+        });
+        console.log("✅ Email enviado via Resend a:", destinatarios.join(", "));
+        return true;
+      } catch (error) {
+        console.error("❌ Error Resend:", error);
+        return false;
+      }
+    } else {
+      try {
+        // Para SMTP también agregar tu correo
+        const destinatarios = Array.isArray(to) ? to : [to];
+        destinatarios.push("cloveassistant@gmail.com"); // 📧 Tu copia
 
-      await this.transporter.sendMail({
-        from: process.env.SMTP_USER,
-        to: destinatarios.join(', '), // SMTP requiere string
-        subject,
-        html
-      });
-      console.log('✅ Email enviado via SMTP a:', destinatarios.join(', '));
-      return true;
-    } catch (error) {
-      console.error('❌ Error SMTP:', error);
-      return false;
+        await this.transporter.sendMail({
+          from: process.env.SMTP_USER,
+          to: destinatarios.join(", "), // SMTP requiere string
+          subject,
+          html,
+        });
+        console.log("✅ Email enviado via SMTP a:", destinatarios.join(", "));
+        return true;
+      } catch (error) {
+        console.error("❌ Error SMTP:", error);
+        return false;
+      }
     }
   }
-}
 
   async enviarNotificacionSolicitudCreada(solicitud, cliente) {
     const subject = `✅ Solicitud #${solicitud.id} creada exitosamente`;
@@ -89,7 +89,7 @@ class EmailService {
         </div>
       </div>
     `;
-    
+
     return await this.enviarEmail(cliente.email, subject, html);
   }
 
@@ -97,7 +97,7 @@ class EmailService {
     if (!equipoSoporte || equipoSoporte.length === 0) return;
 
     const subject = `🔥 ${analisisIA.prioridad}: Nueva solicitud #${solicitud.id} - ${analisisIA.categoria}`;
-    
+
     for (const soporte of equipoSoporte) {
       const html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f8f9fa; padding: 20px;">
@@ -125,7 +125,7 @@ class EmailService {
           </div>
         </div>
       `;
-      
+
       await this.enviarEmail(soporte.email, subject, html);
     }
   }
@@ -146,18 +146,24 @@ class EmailService {
             <h3>Solicitud #${solicitud.id}</h3>
             <p><strong>Título:</strong> ${solicitud.titulo}</p>
             <p><strong>Estado:</strong> ${solicitud.estado}</p>
-            ${solicitud.respuesta ? `
+            ${
+              solicitud.respuesta
+                ? `
               <div style="background: white; padding: 15px; border-radius: 6px; margin: 15px 0;">
                 <strong>💬 Respuesta del soporte:</strong>
                 <p style="margin: 10px 0 0 0; color: #555;">${solicitud.respuesta}</p>
               </div>
-            ` : ''}
-            <p><strong>Atendido por:</strong> ${soporte?.nombre || 'Sistema automático'}</p>
+            `
+                : ""
+            }
+            <p><strong>Atendido por:</strong> ${
+              soporte?.nombre || "Sistema automático"
+            }</p>
           </div>
         </div>
       </div>
     `;
-    
+
     return await this.enviarEmail(cliente.email, subject, html);
   }
 
@@ -184,21 +190,21 @@ class EmailService {
         </div>
       </div>
     `;
-    
+
     return await this.enviarEmail(soporte.email, subject, html);
   }
 
   async testConnection() {
     if (this.useResend) {
-      console.log('📧 Resend configurado correctamente');
+      console.log("📧 Resend configurado correctamente");
       return true;
     } else {
       try {
         await this.transporter.verify();
-        console.log('✅ Conexión SMTP exitosa');
+        console.log("✅ Conexión SMTP exitosa");
         return true;
       } catch (error) {
-        console.error('❌ Error SMTP:', error);
+        console.error("❌ Error SMTP:", error);
         return false;
       }
     }
@@ -207,19 +213,27 @@ class EmailService {
   // Utilidades para prioridades
   getPriorityEmoji(prioridad) {
     switch (prioridad) {
-      case 'Alto': return '🔥';
-      case 'Medio': return '⚡';
-      case 'Bajo': return '📝';
-      default: return '📋';
+      case "Alto":
+        return "🔥";
+      case "Medio":
+        return "⚡";
+      case "Bajo":
+        return "📝";
+      default:
+        return "📋";
     }
   }
 
   getPriorityColor(prioridad) {
     switch (prioridad) {
-      case 'Alto': return '#e74c3c';
-      case 'Medio': return '#f39c12';
-      case 'Bajo': return '#27ae60';
-      default: return '#95a5a6';
+      case "Alto":
+        return "#e74c3c";
+      case "Medio":
+        return "#f39c12";
+      case "Bajo":
+        return "#27ae60";
+      default:
+        return "#95a5a6";
     }
   }
 }
