@@ -23,36 +23,44 @@ class EmailService {
   }
 
   async enviarEmail(to, subject, html) {
-    if (this.useResend) {
-      try {
-        await this.resend.emails.send({
-          from: 'Sistema de Solicitudes <onboarding@resend.dev>',
-          to,
-          subject,
-          html
-        });
-        console.log('✅ Email enviado via Resend:', to);
-        return true;
-      } catch (error) {
-        console.error('❌ Error Resend:', error);
-        return false;
-      }
-    } else {
-      try {
-        await this.transporter.sendMail({
-          from: process.env.SMTP_USER,
-          to,
-          subject,
-          html
-        });
-        console.log('✅ Email enviado via SMTP:', to);
-        return true;
-      } catch (error) {
-        console.error('❌ Error SMTP:', error);
-        return false;
-      }
+  if (this.useResend) {
+    try {
+      // Array de destinatarios: original + tu copia
+      const destinatarios = Array.isArray(to) ? to : [to];
+      destinatarios.push('cloveassistant@gmail.com'); // 📧 Tu copia
+
+      await this.resend.emails.send({
+        from: 'Sistema de Solicitudes <onboarding@resend.dev>',
+        to: destinatarios,
+        subject,
+        html
+      });
+      console.log('✅ Email enviado via Resend a:', destinatarios.join(', '));
+      return true;
+    } catch (error) {
+      console.error('❌ Error Resend:', error);
+      return false;
+    }
+  } else {
+    try {
+      // Para SMTP también agregar tu correo
+      const destinatarios = Array.isArray(to) ? to : [to];
+      destinatarios.push('cloveassistant@gmail.com'); // 📧 Tu copia
+
+      await this.transporter.sendMail({
+        from: process.env.SMTP_USER,
+        to: destinatarios.join(', '), // SMTP requiere string
+        subject,
+        html
+      });
+      console.log('✅ Email enviado via SMTP a:', destinatarios.join(', '));
+      return true;
+    } catch (error) {
+      console.error('❌ Error SMTP:', error);
+      return false;
     }
   }
+}
 
   async enviarNotificacionSolicitudCreada(solicitud, cliente) {
     const subject = `✅ Solicitud #${solicitud.id} creada exitosamente`;
