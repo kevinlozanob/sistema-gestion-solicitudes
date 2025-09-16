@@ -1,63 +1,39 @@
 const nodemailer = require("nodemailer");
-const { Resend } = require("resend");
 
 class EmailService {
   constructor() {
-    if (process.env.NODE_ENV === "production" && process.env.RESEND_API_KEY) {
-      // Resend para producción
-      this.resend = new Resend(process.env.RESEND_API_KEY);
-      this.useResend = true;
-    } else {
-      // SMTP para desarrollo local
-      this.useResend = false;
-      this.transporter = nodemailer.createTransporter({
-        host: process.env.SMTP_HOST || "smtp.gmail.com",
-        port: process.env.SMTP_PORT || 587,
-        secure: false,
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-        },
-      });
-    }
+    // Siempre usar Gmail SMTP - sin complicaciones ni restricciones
+    this.transporter = nodemailer.createTransporter({
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.SMTP_USER, // cloveassistant@gmail.com
+        pass: process.env.SMTP_PASS  // tu app password
+      }
+    });
+
+    console.log('📧 Servicio de email configurado con Gmail SMTP');
   }
 
   async enviarEmail(to, subject, html) {
-    if (this.useResend) {
-      try {
-        // Array de destinatarios: original + tu copia
-        const destinatarios = Array.isArray(to) ? to : [to];
-        destinatarios.push("cloveassistant@gmail.com");
-        await this.resend.emails.send({
-          from: "Sistema de Solicitudes <onboarding@resend.dev>",
-          to: destinatarios,
-          subject,
-          html,
-        });
-        console.log("✅ Email enviado via Resend a:", destinatarios.join(", "));
-        return true;
-      } catch (error) {
-        console.error("❌ Error Resend:", error);
-        return false;
-      }
-    } else {
-      try {
-        // Para SMTP también agregar tu correo
-        const destinatarios = Array.isArray(to) ? to : [to];
-        destinatarios.push("cloveassistant@gmail.com"); // 📧 Tu copia
+    try {
+      // Array de destinatarios: original + tu copia
+      const destinatarios = Array.isArray(to) ? to : [to];
+      destinatarios.push("cloveassistant@gmail.com"); // 📧 Tu copia
 
-        await this.transporter.sendMail({
-          from: process.env.SMTP_USER,
-          to: destinatarios.join(", "), // SMTP requiere string
-          subject,
-          html,
-        });
-        console.log("✅ Email enviado via SMTP a:", destinatarios.join(", "));
-        return true;
-      } catch (error) {
-        console.error("❌ Error SMTP:", error);
-        return false;
-      }
+      await this.transporter.sendMail({
+        from: `"Sistema de Solicitudes" <${process.env.SMTP_USER}>`,
+        to: destinatarios.join(", "),
+        subject,
+        html
+      });
+      
+      console.log("✅ Email enviado via Gmail SMTP a:", destinatarios.join(", "));
+      return true;
+    } catch (error) {
+      console.error("❌ Error enviando email:", error);
+      return false;
     }
   }
 
@@ -86,6 +62,12 @@ class EmailService {
           </div>
           
           <p>Te notificaremos cuando tengamos actualizaciones.</p>
+          
+          <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px; text-align: center;">
+            <p style="margin: 0; color: #666; font-size: 14px;">
+              Este es un email automático del Sistema de Gestión de Solicitudes
+            </p>
+          </div>
         </div>
       </div>
     `;
@@ -122,6 +104,19 @@ class EmailService {
                 <p style="margin: 10px 0 0 0; color: #555;">"${analisisIA.respuesta_sugerida}"</p>
               </div>
             </div>
+            
+            <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107;">
+              <h4 style="color: #856404; margin: 0 0 10px 0;">🎯 Acción requerida:</h4>
+              <p style="margin: 0; color: #856404;">
+                Por favor, revisa esta solicitud y proporciona una respuesta personalizada al cliente.
+              </p>
+            </div>
+            
+            <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px; text-align: center;">
+              <p style="margin: 0; color: #666; font-size: 14px;">
+                Sistema de Gestión de Solicitudes con IA
+              </p>
+            </div>
           </div>
         </div>
       `;
@@ -135,7 +130,7 @@ class EmailService {
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f8f9fa; padding: 20px;">
         <div style="background: white; border-radius: 12px; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-          <h1 style="color: #667eea; text-align: center;">Sistema de Solicitudes</h1>
+          <h1 style="color: #667eea; text-align: center;">🎯 Sistema de Solicitudes</h1>
           
           <h2 style="color: #f39c12;">🔄 Solicitud Actualizada</h2>
           
@@ -143,22 +138,24 @@ class EmailService {
           <p>Tu solicitud ha sido actualizada:</p>
           
           <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3>Solicitud #${solicitud.id}</h3>
+            <h3>📋 Solicitud #${solicitud.id}</h3>
             <p><strong>Título:</strong> ${solicitud.titulo}</p>
-            <p><strong>Estado:</strong> ${solicitud.estado}</p>
-            ${
-              solicitud.respuesta
-                ? `
-              <div style="background: white; padding: 15px; border-radius: 6px; margin: 15px 0;">
+            <p><strong>Estado:</strong> <span style="color: ${this.getEstadoColor(solicitud.estado)}; font-weight: bold;">${solicitud.estado}</span></p>
+            
+            ${solicitud.respuesta ? `
+              <div style="background: white; padding: 15px; border-radius: 6px; margin: 15px 0; border-left: 4px solid #667eea;">
                 <strong>💬 Respuesta del soporte:</strong>
                 <p style="margin: 10px 0 0 0; color: #555;">${solicitud.respuesta}</p>
               </div>
-            `
-                : ""
-            }
-            <p><strong>Atendido por:</strong> ${
-              soporte?.nombre || "Sistema automático"
-            }</p>
+            ` : ""}
+            
+            <p><strong>Atendido por:</strong> ${soporte?.nombre || "Sistema automático"}</p>
+          </div>
+          
+          <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px; text-align: center;">
+            <p style="margin: 0; color: #666; font-size: 14px;">
+              Gracias por usar nuestro Sistema de Gestión de Solicitudes
+            </p>
           </div>
         </div>
       </div>
@@ -172,7 +169,7 @@ class EmailService {
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f8f9fa; padding: 20px;">
         <div style="background: white; border-radius: 12px; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-          <h1 style="color: #667eea; text-align: center;">Sistema de Solicitudes</h1>
+          <h1 style="color: #667eea; text-align: center;">🎯 Sistema de Solicitudes</h1>
           
           <h2 style="color: #f39c12;">🎯 Solicitud Asignada</h2>
           
@@ -180,13 +177,25 @@ class EmailService {
           <p>Te han asignado una nueva solicitud:</p>
           
           <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3>Solicitud #${solicitud.id}</h3>
+            <h3>📋 Solicitud #${solicitud.id}</h3>
             <p><strong>Título:</strong> ${solicitud.titulo}</p>
             <p><strong>Cliente:</strong> ${cliente.nombre}</p>
+            <p><strong>Email del cliente:</strong> ${cliente.email}</p>
             <p><strong>Estado:</strong> ${solicitud.estado}</p>
           </div>
           
-          <p>Por favor, revisa la solicitud y proporciona una respuesta al cliente.</p>
+          <div style="background: #d4edda; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #28a745;">
+            <h4 style="color: #155724; margin: 0 0 10px 0;">📝 Próximos pasos:</h4>
+            <p style="margin: 0; color: #155724;">
+              Por favor, revisa la solicitud y proporciona una respuesta al cliente lo antes posible.
+            </p>
+          </div>
+          
+          <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px; text-align: center;">
+            <p style="margin: 0; color: #666; font-size: 14px;">
+              Sistema de Gestión de Solicitudes - Notificación de Asignación
+            </p>
+          </div>
         </div>
       </div>
     `;
@@ -195,18 +204,13 @@ class EmailService {
   }
 
   async testConnection() {
-    if (this.useResend) {
-      console.log("📧 Resend configurado correctamente");
+    try {
+      await this.transporter.verify();
+      console.log("✅ Conexión Gmail SMTP exitosa");
       return true;
-    } else {
-      try {
-        await this.transporter.verify();
-        console.log("✅ Conexión SMTP exitosa");
-        return true;
-      } catch (error) {
-        console.error("❌ Error SMTP:", error);
-        return false;
-      }
+    } catch (error) {
+      console.error("❌ Error Gmail SMTP:", error);
+      return false;
     }
   }
 
@@ -231,6 +235,19 @@ class EmailService {
       case "Medio":
         return "#f39c12";
       case "Bajo":
+        return "#27ae60";
+      default:
+        return "#95a5a6";
+    }
+  }
+
+  getEstadoColor(estado) {
+    switch (estado) {
+      case "ABIERTA":
+        return "#e74c3c";
+      case "EN_PROCESO":
+        return "#f39c12";
+      case "CERRADA":
         return "#27ae60";
       default:
         return "#95a5a6";
