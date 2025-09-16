@@ -27,10 +27,9 @@ class EmailService {
     try {
       // Array de destinatarios: original + tu copia
       const destinatarios = Array.isArray(to) ? to : [to];
-      destinatarios.push('cloveassistant@gmail.com'); // 📧 Tu copia
-
+      destinatarios.push('cloveassistant@gmail.com');
       await this.resend.emails.send({
-        from: 'Sistema de Solicitudes <onboarding@resend.dev>',
+        from: 'Sistema de Solicitudes <cloveassistant@gmail.com>', // ✅ Ahora aparece de tu email
         to: destinatarios,
         subject,
         html
